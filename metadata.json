@@ -1,0 +1,6 @@
+{
+  "name": "QR Print SaaS",
+  "description": "A premium multi-tenant QR code printing platform with Super Admin, Shop Owner dashboards, and Customer upload portals.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
