@@ -1,0 +1,33 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // --- Shops ---
+    match /shops/{shopId} {
+      allow read: if true; // Customers need to view shop name/branding to upload documents
+      allow write: if true; // Let merchants register and update settings, revenue, or printer status
+    }
+
+    // --- Orders ---
+    match /orders/{orderId} {
+      allow read, write: if true; // Customers submit orders; merchants fetch and process them
+    }
+
+    // --- Coupons ---
+    match /coupons/{couponCode} {
+      allow read: if true; // Customers apply coupons at checkout
+      allow write: if true; // Admins configure coupon rules and discounts
+    }
+
+    // --- Settings ---
+    match /settings/{docId} {
+      allow read: if true; // SaaS platform branding and plans are globally visible
+      allow write: if true; // Super Admin configures system settings
+    }
+
+    // --- Support Tickets ---
+    match /tickets/{ticketId} {
+      allow read, write: if true; // Anyone can submit tickets, admins resolve them
+    }
+  }
+}

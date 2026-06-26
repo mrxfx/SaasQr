@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Shield, Store, User, Globe, ArrowLeft, ArrowRight, RotateCw, Copy, Check } from 'lucide-react';
+import { Shield, Store, User, Globe, ArrowLeft, ArrowRight, RotateCw, Copy, Check, Cloud, Database } from 'lucide-react';
 import { Shop } from '../types';
+import { isConfigured } from '../firebase';
 
 interface SimulatedBrowserProps {
   currentUrl: string;
@@ -157,9 +158,22 @@ export default function SimulatedBrowser({ currentUrl, onChangeUrl, children, sh
           </div>
 
           {/* Connection Status Indicator */}
-          <div className="flex items-center gap-1.5 text-xs text-slate-500">
-            <span className="w-2 h-2 rounded-full bg-blue-500 inline-block"></span>
-            <span>Secure Connection</span>
+          <div className="flex items-center gap-2">
+            {isConfigured ? (
+              <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-emerald-50 text-emerald-700 text-xs font-semibold border border-emerald-200">
+                <Cloud className="w-3.5 h-3.5 animate-pulse text-emerald-500" />
+                <span>Firebase Cloud</span>
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-amber-50 text-amber-700 text-xs font-semibold border border-amber-200" title="Firebase variables not set, falling back to fully functional Local Storage.">
+                <Database className="w-3.5 h-3.5 text-amber-500" />
+                <span>Local Storage Mode</span>
+              </span>
+            )}
+            <div className="hidden md:flex items-center gap-1.5 text-xs text-slate-500">
+              <span className="w-2 h-2 rounded-full bg-blue-500 inline-block"></span>
+              <span>SSL Secure</span>
+            </div>
           </div>
         </div>
 

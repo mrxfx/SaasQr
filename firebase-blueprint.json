@@ -1,0 +1,117 @@
+{
+  "entities": {
+    "Shop": {
+      "title": "Shop",
+      "description": "A print shop tenant in the SaaS network",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique shop identifier slug" },
+        "name": { "type": "string", "description": "Display name of the print shop" },
+        "ownerName": { "type": "string", "description": "Full name of the shop owner" },
+        "ownerEmail": { "type": "string", "description": "Login/contact email of the owner" },
+        "logoUrl": { "type": "string", "description": "URL of the shop's logo" },
+        "bwPrice": { "type": "number", "description": "Base price per black and white copy" },
+        "colorPrice": { "type": "number", "description": "Base price per color copy" },
+        "paperPrices": {
+          "type": "object",
+          "description": "Additional pricing options based on paper size"
+        },
+        "status": { "type": "string", "enum": ["active", "blocked"], "description": "SaaS operational status" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Creation timestamp" },
+        "revenue": { "type": "number", "description": "Total aggregated shop revenue" },
+        "printerStatus": { "type": "string", "enum": ["online", "offline", "error"], "description": "Real-time hardware status" },
+        "printerName": { "type": "string", "description": "Connected physical printer name" },
+        "qrCode": { "type": "string", "description": "Auto-generated portal QR code content" }
+      },
+      "required": ["id", "name", "ownerName", "ownerEmail", "bwPrice", "colorPrice", "paperPrices", "status", "createdAt", "revenue", "printerStatus", "printerName", "qrCode"]
+    },
+    "Order": {
+      "title": "Order",
+      "description": "An upload and print order request from a customer",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique order ID" },
+        "shopId": { "type": "string", "description": "The shop ID where the document is printed" },
+        "shopName": { "type": "string", "description": "Display name of the target shop" },
+        "customerPhone": { "type": "string", "description": "Customer mobile phone number" },
+        "fileName": { "type": "string", "description": "Uploaded document filename" },
+        "fileType": { "type": "string", "description": "Document extension format" },
+        "fileSize": { "type": "string", "description": "Formatted file size" },
+        "paperSize": { "type": "string", "enum": ["A4", "A3", "Letter"], "description": "Paper dimensions requested" },
+        "colorMode": { "type": "string", "enum": ["bw", "color"], "description": "Printing ink mode" },
+        "copies": { "type": "number", "description": "Number of printed copies requested" },
+        "totalPrice": { "type": "number", "description": "Total checkout price in INR" },
+        "paymentMethod": { "type": "string", "enum": ["phonepe", "paytm", "cash"], "description": "Gateway or counter payment method" },
+        "paymentStatus": { "type": "string", "enum": ["pending", "paid", "failed"], "description": "Real-time payment clearance status" },
+        "printStatus": { "type": "string", "enum": ["queued", "printing", "completed", "cancelled"], "description": "Hardware dispatcher queue status" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Order placement timestamp" },
+        "estimatedTime": { "type": "string", "description": "Estimated processing time" }
+      },
+      "required": ["id", "shopId", "shopName", "customerPhone", "fileName", "fileType", "fileSize", "paperSize", "colorMode", "copies", "totalPrice", "paymentMethod", "paymentStatus", "printStatus", "createdAt", "estimatedTime"]
+    },
+    "Coupon": {
+      "title": "Coupon",
+      "description": "Discount coupon for customer checkout",
+      "type": "object",
+      "properties": {
+        "code": { "type": "string", "description": "Unique coupon discount code" },
+        "discountPercent": { "type": "number", "description": "Percentage discount amount" },
+        "isActive": { "type": "boolean", "description": "Validation status" }
+      },
+      "required": ["code", "discountPercent", "isActive"]
+    },
+    "SystemSettings": {
+      "title": "SystemSettings",
+      "description": "SaaS Platform configuration global settings",
+      "type": "object",
+      "properties": {
+        "platformName": { "type": "string", "description": "Name of the SaaS platform" },
+        "commissionPercent": { "type": "number", "description": "Aggregated platform fee commission percentage" },
+        "superAdminEmail": { "type": "string", "description": "Super admin login credentials" },
+        "pricingPlans": {
+          "type": "array",
+          "description": "Standard SaaS subscription packages available"
+        }
+      },
+      "required": ["platformName", "commissionPercent", "superAdminEmail", "pricingPlans"]
+    },
+    "SupportTicket": {
+      "title": "SupportTicket",
+      "description": "Customer and merchant issue tickets",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique ticket ID" },
+        "shopId": { "type": "string", "description": "Optional shop identifier slug" },
+        "shopName": { "type": "string", "description": "Optional shop name" },
+        "customerName": { "type": "string", "description": "Name of the ticket issuer" },
+        "subject": { "type": "string", "description": "Subject line summary" },
+        "message": { "type": "string", "description": "Detailed ticket context body" },
+        "status": { "type": "string", "enum": ["open", "resolved"], "description": "Ticket progression status" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Ticket submission timestamp" }
+      },
+      "required": ["id", "customerName", "subject", "message", "status", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/shops/{shopId}": {
+      "schema": "Shop",
+      "description": "Merchant print shop documents"
+    },
+    "/orders/{orderId}": {
+      "schema": "Order",
+      "description": "Document printing order transactions"
+    },
+    "/coupons/{couponCode}": {
+      "schema": "Coupon",
+      "description": "Platform checkout coupon configurations"
+    },
+    "/settings/global": {
+      "schema": "SystemSettings",
+      "description": "Unified global SaaS configuration settings document"
+    },
+    "/tickets/{ticketId}": {
+      "schema": "SupportTicket",
+      "description": "SaaS and shop support ticket requests"
+    }
+  }
+}

@@ -12,7 +12,9 @@ import {
   INITIAL_SETTINGS,
   INITIAL_TICKETS,
 } from './mockData';
-import { Shield, Store, QrCode, Lock, Key, AlertTriangle, ArrowLeft } from 'lucide-react';
+import { Shield, Store, QrCode, Lock, Key, AlertTriangle, ArrowLeft, Cloud } from 'lucide-react';
+import { isConfigured } from './firebase';
+import { firebaseService } from './firebaseService';
 
 export default function App() {
   // Navigation State (simulated URL)
@@ -44,30 +46,118 @@ export default function App() {
     return saved ? JSON.parse(saved) : INITIAL_TICKETS;
   });
 
+  // Track if Firebase initial load is completed
+  const [isFirebaseLoaded, setIsFirebaseLoaded] = useState<boolean>(false);
+
   // Authentication states
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState<boolean>(true); // pre-authenticate for seamless sandbox play
   const [loggedInShopId, setLoggedInShopId] = useState<string | null>('mrxprint'); // pre-authenticate for demo shop
 
-  // Sync to local storage
+  // Initial Firebase Load
+  useEffect(() => {
+    if (isConfigured) {
+      const loadFirebaseData = async () => {
+        try {
+          const remoteShops = await firebaseService.getShops();
+          if (remoteShops && remoteShops.length > 0) {
+            setShops(remoteShops);
+          } else {
+            // Seed Firestore with initial shops
+            for (const s of INITIAL_SHOPS) {
+              await firebaseService.saveShop(s);
+            }
+          }
+
+          const remoteOrders = await firebaseService.getOrders();
+          if (remoteOrders && remoteOrders.length > 0) {
+            setOrders(remoteOrders);
+          } else {
+            // Seed Firestore with initial orders
+            for (const o of INITIAL_ORDERS) {
+              await firebaseService.saveOrder(o);
+            }
+          }
+
+          const remoteCoupons = await firebaseService.getCoupons();
+          if (remoteCoupons && remoteCoupons.length > 0) {
+            setCoupons(remoteCoupons);
+          } else {
+            // Seed coupons
+            for (const c of INITIAL_COUPONS) {
+              await firebaseService.saveCoupon(c);
+            }
+          }
+
+          const remoteSettings = await firebaseService.getSettings();
+          if (remoteSettings) {
+            setSettings(remoteSettings);
+          } else {
+            await firebaseService.saveSettings(INITIAL_SETTINGS);
+          }
+
+          const remoteTickets = await firebaseService.getTickets();
+          if (remoteTickets && remoteTickets.length > 0) {
+            setTickets(remoteTickets);
+          } else {
+            for (const t of INITIAL_TICKETS) {
+              await firebaseService.saveTicket(t);
+            }
+          }
+        } catch (error) {
+          console.error('Error seeding/loading Firebase data:', error);
+        } finally {
+          setIsFirebaseLoaded(true);
+        }
+      };
+      loadFirebaseData();
+    } else {
+      setIsFirebaseLoaded(true);
+    }
+  }, []);
+
+  // Sync to local storage and Firebase
   useEffect(() => {
     localStorage.setItem('qr_print_saas_shops', JSON.stringify(shops));
-  }, [shops]);
+    if (isConfigured && isFirebaseLoaded) {
+      shops.forEach((shop) => {
+        firebaseService.saveShop(shop);
+      });
+    }
+  }, [shops, isFirebaseLoaded]);
 
   useEffect(() => {
     localStorage.setItem('qr_print_saas_orders', JSON.stringify(orders));
-  }, [orders]);
+    if (isConfigured && isFirebaseLoaded) {
+      orders.forEach((order) => {
+        firebaseService.saveOrder(order);
+      });
+    }
+  }, [orders, isFirebaseLoaded]);
 
   useEffect(() => {
     localStorage.setItem('qr_print_saas_coupons', JSON.stringify(coupons));
-  }, [coupons]);
+    if (isConfigured && isFirebaseLoaded) {
+      coupons.forEach((coupon) => {
+        firebaseService.saveCoupon(coupon);
+      });
+    }
+  }, [coupons, isFirebaseLoaded]);
 
   useEffect(() => {
     localStorage.setItem('qr_print_saas_settings', JSON.stringify(settings));
-  }, [settings]);
+    if (isConfigured && isFirebaseLoaded) {
+      firebaseService.saveSettings(settings);
+    }
+  }, [settings, isFirebaseLoaded]);
 
   useEffect(() => {
     localStorage.setItem('qr_print_saas_tickets', JSON.stringify(tickets));
-  }, [tickets]);
+    if (isConfigured && isFirebaseLoaded) {
+      tickets.forEach((ticket) => {
+        firebaseService.saveTicket(ticket);
+      });
+    }
+  }, [tickets, isFirebaseLoaded]);
 
   // Handle register a new shop from Landing Page
   const handleRegisterShop = (
